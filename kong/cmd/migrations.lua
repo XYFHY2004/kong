@@ -25,6 +25,8 @@ The available commands are:
 
   reset                             Reset the database.
 
+  migrate-apis                      Migrates API entities to Routes and Services.
+
 Options:
  -y,--yes                           Assume "yes" to prompts and run
                                     non-interactively.
@@ -210,6 +212,12 @@ local function execute(args)
       force = args.force,
     })
 
+  elseif args.command == "migrate-apis" then
+    migrations_utils.migrate_apis(schema_state, db, {
+      ttl = args.lock_timeout,
+      force = args.force,
+    })
+
   else
     error("unreachable")
   end
@@ -225,5 +233,6 @@ return {
     finish = true,
     list = true,
     reset = true,
+    ["migrate-apis"] = true
   }
 }
