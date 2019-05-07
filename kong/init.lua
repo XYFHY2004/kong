@@ -488,7 +488,12 @@ function Kong.init_worker()
 
 
   -- run plugins init_worker context
-  runloop.update_plugins_plan()
+  local ok, err = runloop.update_plugins_plan()
+  if not ok then
+    ngx_log(ngx_CRIT, "could not ensure plugins plan is up to date: ", err)
+    return
+  end
+
   local plugins_plan = runloop.get_plugins_plan()
   local phase_plugins = plugins_plan.phases.init_worker
   for _, plugin in ipairs(plugins_plan.loaded) do
