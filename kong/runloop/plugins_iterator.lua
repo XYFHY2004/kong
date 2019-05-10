@@ -168,66 +168,64 @@ local function get_next(self)
 
     local plugin_configuration
 
-    repeat
+    if not combos then
+      goto after_combos
+    end
 
-      if not combos then
-        break
+    if route_id and service_id and consumer_id and combos[COMBO_RSC] then
+      plugin_configuration = load_configuration(ctx, name, route_id, service_id, consumer_id)
+      if plugin_configuration then
+        goto after_combos
       end
+    end
 
-      if route_id and service_id and consumer_id and combos[COMBO_RSC] then
-        plugin_configuration = load_configuration(ctx, name, route_id, service_id, consumer_id)
-        if plugin_configuration then
-          break
-        end
+    if route_id and consumer_id and combos[COMBO_RC] then
+      plugin_configuration = load_configuration(ctx, name, route_id, nil, consumer_id)
+      if plugin_configuration then
+        goto after_combos
       end
+    end
 
-      if route_id and consumer_id and combos[COMBO_RC] then
-        plugin_configuration = load_configuration(ctx, name, route_id, nil, consumer_id)
-        if plugin_configuration then
-          break
-        end
+    if service_id and consumer_id and combos[COMBO_SC] then
+      plugin_configuration = load_configuration(ctx, name, nil, service_id, consumer_id)
+      if plugin_configuration then
+        goto after_combos
       end
+    end
 
-      if service_id and consumer_id and combos[COMBO_SC] then
-        plugin_configuration = load_configuration(ctx, name, nil, service_id, consumer_id)
-        if plugin_configuration then
-          break
-        end
+    if route_id and service_id and combos[COMBO_RS] then
+      plugin_configuration = load_configuration(ctx, name, route_id, service_id, nil)
+      if plugin_configuration then
+        goto after_combos
       end
+    end
 
-      if route_id and service_id and combos[COMBO_RS] then
-        plugin_configuration = load_configuration(ctx, name, route_id, service_id, nil)
-        if plugin_configuration then
-          break
-        end
+    if consumer_id and combos[COMBO_C] then
+      plugin_configuration = load_configuration(ctx, name, nil, nil, consumer_id)
+      if plugin_configuration then
+        goto after_combos
       end
+    end
 
-      if consumer_id and combos[COMBO_C] then
-        plugin_configuration = load_configuration(ctx, name, nil, nil, consumer_id)
-        if plugin_configuration then
-          break
-        end
+    if route_id and combos[COMBO_R] then
+      plugin_configuration = load_configuration(ctx, name, route_id, nil, nil)
+      if plugin_configuration then
+        goto after_combos
       end
+    end
 
-      if route_id and combos[COMBO_R] then
-        plugin_configuration = load_configuration(ctx, name, route_id, nil, nil)
-        if plugin_configuration then
-          break
-        end
+    if service_id and combos[COMBO_S] then
+      plugin_configuration = load_configuration(ctx, name, nil, service_id, nil)
+      if plugin_configuration then
+        goto after_combos
       end
+    end
 
-      if service_id and combos[COMBO_S] then
-        plugin_configuration = load_configuration(ctx, name, nil, service_id, nil)
-        if plugin_configuration then
-          break
-        end
-      end
+    if combos[COMBO_GLOBAL] then
+      plugin_configuration = load_configuration(ctx, name, nil, nil, nil)
+    end
 
-      if combos[COMBO_GLOBAL] then
-        plugin_configuration = load_configuration(ctx, name, nil, nil, nil)
-      end
-
-    until true
+    ::after_combos::
 
     if plugin_configuration then
       ctx.plugins[name] = plugin_configuration
