@@ -3,7 +3,6 @@ local constants    = require "kong.constants"
 local reports      = require "kong.reports"
 
 local kong         = kong
-local setmetatable = setmetatable
 
 
 local COMBO_R      = 1
@@ -242,9 +241,30 @@ local function get_next(self)
 end
 
 
-
 local PluginsIterator = {}
-local PluginsIterator_mt = { __index = PluginsIterator }
+
+
+--- Plugins for request iterator.
+-- Iterate over the plugin loaded for a request, stored in
+--`ngx.ctx.plugins`.
+--
+-- @param[type=string] phase Plugins iterator execution phase
+-- @treturn function iterator
+local function iterate(self, phase)
+  local ctx = ngx.ctx
+  if not ctx.plugins then
+    ctx.plugins = {}
+  end
+
+  local iteration = {
+    iterator = self,
+    phase = phase,
+    ctx = ctx,
+    i = 0,
+  }
+
+  return get_next, iteration
+end
 
 
 function PluginsIterator.new(version)
@@ -304,39 +324,14 @@ function PluginsIterator.new(version)
     end
   end
 
-  return setmetatable({
+  return {
     map = map,
     version = version,
     phases = phases,
     combos = combos,
     loaded = loaded_plugins,
-  }, PluginsIterator_mt)
-end
-
-
-local iteration_mt = { __call = get_next }
-
-
---- Plugins for request iterator.
--- Iterate over the plugin loaded for a request, stored in
---`ngx.ctx.plugins`.
---
--- @param[type=string] phase Plugins iterator execution phase
--- @treturn function iterator
-function PluginsIterator:iterate(phase)
-  local ctx = ngx.ctx
-  if not ctx.plugins then
-    ctx.plugins = {}
-  end
-
-  local iteration = {
-    iterator = self,
-    phase = phase,
-    ctx = ctx,
-    i = 0,
+    iterate = iterate,
   }
-
-  return setmetatable(iteration, iteration_mt)
 end
 
 
